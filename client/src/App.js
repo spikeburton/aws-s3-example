@@ -14,40 +14,47 @@ export default class App extends Component {
 
     this.setState({ loading: true });
 
-    fetch(`${API}/s3/direct_post`)
-      .then(res => res.json())
-      .then(payload => {
-        const url = payload.url;
-        const formData = new FormData();
+    const payload = await fetch(`${API}/s3/direct_post`).then(res =>
+      res.json()
+    );
 
-        Object.keys(payload.fields).forEach(key =>
-          formData.append(key, payload.fields[key])
-        );
-        formData.append('file', file);
+    const url = payload.url;
+    const formData = new FormData();
 
-        fetch(url, {
-          method: 'POST',
-          body: formData
-        })
-          .then(res => res.text())
-          .then(xml => {
-            const imageURL = new DOMParser()
-              .parseFromString(xml, 'application/xml')
-              .getElementsByTagName('Location')[0].textContent;
+    Object.keys(payload.fields).forEach(key =>
+      formData.append(key, payload.fields[key])
+    );
+    formData.append('file', file);
 
-            this.setState({
-              loading: false,
-              url: imageURL
-            });
-          });
-      });
+    const xml = await fetch(url, {
+      method: 'POST',
+      body: formData
+    }).then(res => res.text());
+
+    const uploadUrl = new DOMParser()
+      .parseFromString(xml, 'application/xml')
+      .getElementsByTagName('Location')[0].textContent;
+
+    this.setState({
+      loading: false,
+      url: uploadUrl
+    });
   };
 
   render() {
     return (
       <div>
         <div id="image-box">
-          <h4>Select Image</h4>
+          {this.state.url ? (
+            <img
+              src={this.state.url}
+              alt=""
+              style={{ width: '200px', height: '200px' }}
+            />
+          ) : (
+            <h4>Select Image</h4>
+          )}
+          {this.state.loading ? <h4>Loading ...</h4> : null}
         </div>
         <input
           type="file"
