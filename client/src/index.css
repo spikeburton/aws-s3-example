@@ -1,0 +1,11 @@
+body {
+  margin: 0;
+  text-align: center;
+}
+
+#image-box {
+  margin: 10px auto;
+  height: 200px;
+  width: 200px;
+  border: 1px solid black;
+}
